@@ -21,7 +21,6 @@ import shred from '../shred.js';
 import ShredConstants from '../ShredConstants.js';
 import ParticleNode from './ParticleNode.js';
 
-const electronsColonString = shredStrings.electronsColon;
 const neutronsColonString = shredStrings.neutronsColon;
 const protonsColonString = shredStrings.protonsColon;
 
@@ -58,31 +57,23 @@ function ParticleCountDisplay( numberAtom, maxParticles, maxWidth, options ) {
     tandem: options.tandem.createTandem( 'neutronTitle' )
   } );
   panelContents.addChild( neutronTitle );
-  const electronTitle = new Text( electronsColonString, {
-    font: LABEL_FONT,
-    tandem: options.tandem.createTandem( 'electronTitle' )
-  } );
-  panelContents.addChild( electronTitle );
 
   // Scale the title if more than allowed proportion width
   const maxAllowableLabelWidth = maxWidth * TITLE_MAX_WIDTH_PROPORTION;
   protonTitle.maxWidth = maxAllowableLabelWidth;
-  electronTitle.maxWidth = maxAllowableLabelWidth;
+ /// electronTitle.maxWidth = maxAllowableLabelWidth;
   neutronTitle.maxWidth = maxAllowableLabelWidth;
 
   // Lay out the labels.
-  const maxLabelWidth = Math.max( Math.max( protonTitle.width, neutronTitle.width ), electronTitle.width );
+  const maxLabelWidth = Math.max( Math.max( protonTitle.width, neutronTitle.width ) );///, electronTitle.width
   protonTitle.right = maxLabelWidth;
   protonTitle.top = 0;
   neutronTitle.right = maxLabelWidth;
   neutronTitle.bottom = protonTitle.bottom + Math.max( neutronTitle.height, MIN_VERTICAL_SPACING );
-  electronTitle.right = maxLabelWidth;
-  electronTitle.bottom = neutronTitle.bottom + Math.max( electronTitle.height, MIN_VERTICAL_SPACING );
 
   // Figure out the sizes of the particles and the inter-particle spacing based on the max width.
   const totalParticleSpace = maxWidth - protonTitle.right - 10;
   const nucleonRadius = totalParticleSpace / ( ( maxParticles * 2 ) + ( maxParticles - 1 ) + 2 );
-  const electronRadius = nucleonRadius * 0.6; // Arbitrarily chosen.
   const interParticleSpacing = nucleonRadius * 3;
 
   // Add an invisible spacer that will keep the control panel at a min width.
@@ -96,12 +87,10 @@ function ParticleCountDisplay( numberAtom, maxParticles, maxWidth, options ) {
   // changed ones (faster than full rebuild)
   const protons = [];
   const neutrons = [];
-  const electrons = [];
 
   // counts of the displayed number of particles
   let protonDisplayCount = 0;
   let neutronDisplayCount = 0;
-  let electronDisplayCount = 0;
 
   // increase the particle count by 1, and return the currently displayed quantity array
   function incrementParticleCount( array, currentQuantity, particleType, radius, startX, startY ) {
@@ -156,19 +145,6 @@ function ParticleCountDisplay( numberAtom, maxParticles, maxWidth, options ) {
     }
     while ( atom.neutronCountProperty.get() < neutronDisplayCount ) {
       neutronDisplayCount = decrementParticleCount( neutrons, neutronDisplayCount );
-    }
-
-    while ( atom.electronCountProperty.get() > electronDisplayCount ) {
-      electronDisplayCount = incrementParticleCount(
-        electrons,
-        electronDisplayCount,
-        'electron',
-        electronRadius,
-        electronTitle.right + interParticleSpacing, electronTitle.center.y
-      );
-    }
-    while ( atom.electronCountProperty.get() < electronDisplayCount ) {
-      electronDisplayCount = decrementParticleCount( electrons, electronDisplayCount );
     }
   };
 
