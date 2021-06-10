@@ -13,6 +13,10 @@ import Node from '../../../scenery/js/nodes/Node.js';
 import RadialGradient from '../../../scenery/js/util/RadialGradient.js';
 import Tandem from '../../../tandem/js/Tandem.js';
 import shred from '../shred.js';
+import Property from '../../../axon/js/Property.js';
+import Range from '../../../dot/js/Range.js';
+import PropertyIO from '../../../axon/js/PropertyIO.js';
+import NumberIO from '../../../tandem/js/types/NumberIO.js';
 
 /**
  * @param {string} particleType - proton, neutron, or electron
@@ -42,6 +46,16 @@ function ParticleNode( particleType, radius, options ) {
       .addColorStop( 1, baseColor ),
     cursor: 'pointer'
   } ) );
+
+  this.zLayerProperty = new Property( 0, {
+    isValidValue: function( value ) {
+      return value >= 0 && value <= options.maxZLayer;
+    },
+    tandem: options.tandem && options.tandem.createTandem( 'zLayerProperty' ),
+    numberType: 'Integer',
+    range: new Range( 0, Number.POSITIVE_INFINITY ),
+    phetioType: PropertyIO( NumberIO )
+  } ); // Used in view, integer value, higher means further back.
 }
 
 shred.register( 'ParticleNode', ParticleNode );
