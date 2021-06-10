@@ -19,16 +19,12 @@ import Path from '../../../scenery/js/nodes/Path.js';
 import Text from '../../../scenery/js/nodes/Text.js';
 import Tandem from '../../../tandem/js/Tandem.js';
 import AtomIdentifier from '../AtomIdentifier.js';
-import shredStrings from '../shredStrings.js';
 import shred from '../shred.js';
-import ElectronCloudView from './ElectronCloudView.js';
-import ElectronShellView from './ElectronShellView.js';
+import NucleonShellView from './NucleonShellView.js';
+import buildAnAtomStrings from '../../../build-an-atom/js/buildAnAtomStrings.js';
 
-const minusSignIonString = shredStrings.minusSignIon;
-const neutralAtomString = shredStrings.neutralAtom;
-const positiveSignIonString = shredStrings.positiveSignIon;
-const stableString = shredStrings.stable;
-const unstableString = shredStrings.unstable;
+const stableString = buildAnAtomStrings.stable;
+const unstableString = buildAnAtomStrings.unstable;
 
 // constants
 const ELEMENT_NAME_FONT_SIZE = 22;
@@ -41,12 +37,12 @@ const ELEMENT_NAME_FONT_SIZE = 22;
  */
 function AtomNode( particleAtom, modelViewTransform, options ) {
 
+  //changed showCenterX to false
   options = merge( {
-      showCenterX: true,
+      showCenterX: false,
       showElementNameProperty: new Property( true ),
-      showNeutralOrIonProperty: new Property( true ),
       showStableOrUnstableProperty: new Property( true ),
-      electronShellDepictionProperty: new Property( 'orbits' ),
+      electronShellDepictionProperty: new Property( 'orbitals' ),
       tandem: Tandem.REQUIRED
     },
     options
@@ -83,24 +79,18 @@ function AtomNode( particleAtom, modelViewTransform, options ) {
     particleAtom.protonCountProperty.link( listener );
   }
 
-  // Add the electron shells and cloud.
-  const electronShell = new ElectronShellView( particleAtom, modelViewTransform, {
-    tandem: options.tandem.createTandem( 'electronShell' )
+  // Add the nucleus shells and cloud.
+  const nucleonOrbital = new NucleonShellView( particleAtom, modelViewTransform, {
+    tandem: options.tandem.createTandem( 'nucleonOrbital' )
   } );
-  this.addChild( electronShell );
-  const electronCloud = new ElectronCloudView( particleAtom, modelViewTransform, {
-    tandem: options.tandem.createTandem( 'electronCloud' )
-  } );
-  this.addChild( electronCloud );
-
+  this.addChild( nucleonOrbital );
   const updateElectronShellDepictionVisibility = function( depiction ) {
-    electronShell.visible = depiction === 'orbits';
-    electronCloud.visible = depiction === 'cloud';
+    nucleonOrbital.visible = depiction === 'orbitals';
   };
   options.electronShellDepictionProperty.link( updateElectronShellDepictionVisibility );
 
   const elementNameCenterPos = modelViewTransform.modelToViewPosition(
-    particleAtom.positionProperty.get().plus( new Vector2( 0, particleAtom.innerElectronShellRadius * 0.60 ) )
+    particleAtom.positionProperty.get().plus( new Vector2( -80, particleAtom.outerElectronShellRadius * 1.2 ) )
   );
 
   // @private - Create the textual readout for the element name.
@@ -135,54 +125,9 @@ function AtomNode( particleAtom, modelViewTransform, options ) {
   };
   options.showElementNameProperty.link( updateElementNameVisibility );
 
-  const ionIndicatorTranslation = modelViewTransform.modelToViewPosition( particleAtom.positionProperty.get().plus(
-    new Vector2( particleAtom.outerElectronShellRadius * 1.05, 0 ).rotated( Math.PI * 0.3 ) ) );
-
-  // @private - Create the textual readout for the ion indicator, set by trial and error.
-  this.ionIndicator = new Text( '', {
-    font: new PhetFont( 20 ),
-    fill: 'black',
-    translation: ionIndicatorTranslation,
-    pickable: false,
-    maxWidth: 150,
-    tandem: options.tandem.createTandem( 'ionIndicator' )
-  } );
-  this.addChild( this.ionIndicator );
-
-  // Define the update function for the ion indicator.
-  const updateIonIndicator = function() {
-    if ( self.atom.protonCountProperty.get() > 0 ) {
-      const charge = self.atom.getCharge();
-      if ( charge < 0 ) {
-        self.ionIndicator.text = minusSignIonString;
-        self.ionIndicator.fill = 'blue';
-      }
-      else if ( charge > 0 ) {
-        self.ionIndicator.text = positiveSignIonString;
-        self.ionIndicator.fill = PhetColorScheme.RED_COLORBLIND;
-      }
-      else {
-        self.ionIndicator.text = neutralAtomString;
-        self.ionIndicator.fill = 'black';
-      }
-    }
-    else {
-      self.ionIndicator.text = '';
-      self.ionIndicator.fill = 'black';
-    }
-  };
-  updateIonIndicator(); // Do the initial update.
-
-  particleAtom.protonCountProperty.link( updateIonIndicator );
-  particleAtom.electronCountProperty.link( updateIonIndicator );
-  const updateIonIndicatorVisibility = function( visible ) {
-    self.ionIndicator.visible = visible;
-  };
-  options.showNeutralOrIonProperty.link( updateIonIndicatorVisibility );
-
   // Create the textual readout for the stability indicator.
   const stabilityIndicatorCenterPos = modelViewTransform.modelToViewPosition( particleAtom.positionProperty.get().plus(
-    new Vector2( 0, -particleAtom.innerElectronShellRadius * 0.60 ) ) );
+    new Vector2( -80, particleAtom.innerElectronShellRadius * 1.4 ) ) );//moved stable/unstable higher
 
   // @private
   this.stabilityIndicator = new Text( '', {
@@ -222,24 +167,19 @@ function AtomNode( particleAtom, modelViewTransform, options ) {
 
   // @private
   this.disposeAtomNode = function() {
-    electronCloud.dispose();
     if ( options.showCenterX ) {
       particleAtom.electronCountProperty.unlink( listener );
       particleAtom.neutronCountProperty.unlink( listener );
       particleAtom.protonCountProperty.unlink( listener );
     }
-
     options.electronShellDepictionProperty.unlink( updateElectronShellDepictionVisibility );
     particleAtom.protonCountProperty.unlink( updateElementName );
     options.showElementNameProperty.unlink( updateElementNameVisibility );
-    particleAtom.protonCountProperty.unlink( updateIonIndicator );
-    particleAtom.electronCountProperty.unlink( updateIonIndicator );
-    options.showNeutralOrIonProperty.unlink( updateIonIndicatorVisibility );
     particleAtom.protonCountProperty.unlink( updateStabilityIndicator );
     particleAtom.neutronCountProperty.unlink( updateStabilityIndicator );
     options.showStableOrUnstableProperty.unlink( updateStabilityIndicatorVisibility );
     atomCenterMarker.dispose();
-    electronShell.dispose();
+    nucleonOrbital.dispose();
     this.elementName.dispose();
     this.ionIndicator.dispose();
     this.stabilityIndicator.dispose();
