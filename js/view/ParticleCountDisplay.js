@@ -61,7 +61,7 @@ function ParticleCountDisplay( numberAtom, maxParticles, maxWidth, options ) {
   // Scale the title if more than allowed proportion width
   const maxAllowableLabelWidth = maxWidth * TITLE_MAX_WIDTH_PROPORTION;
   protonTitle.maxWidth = maxAllowableLabelWidth;
- /// electronTitle.maxWidth = maxAllowableLabelWidth;
+  /// electronTitle.maxWidth = maxAllowableLabelWidth;
   neutronTitle.maxWidth = maxAllowableLabelWidth;
 
   // Lay out the labels.
