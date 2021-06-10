@@ -4,6 +4,7 @@
  * Node that represents the nucleon shells, aka straight horizontal lines above the buckets, in the view.
  *
  * @author John Blanco
+ * @author Luisa Vargas
  */
 
 import Property from '../../../axon/js/Property.js';
